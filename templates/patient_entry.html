@@ -1,0 +1,434 @@
+{% extends "base.html" %}
+
+{% block title %}Register Patient & Clinical Data Intake{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <!-- Breadcrumb & Header -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div>
+            <div class="flex items-center space-x-2 text-xs text-slate-500 mb-1">
+                <a href="/" class="hover:text-cyan-600">Home</a>
+                <span>/</span>
+                <span class="text-slate-800 font-medium">Add Patient</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center">
+                <i data-lucide="clipboard-plus" class="w-7 h-7 text-cyan-600 mr-2.5"></i>
+                Multimodal Patient Data Intake
+            </h1>
+            <p class="text-sm text-slate-500 mt-1">
+                Enter demographic, lifestyle, and biochemical indicators for AI ensemble multi-disease risk evaluation.
+            </p>
+        </div>
+
+        <div class="flex items-center space-x-2">
+            <span class="text-xs bg-emerald-100 text-emerald-800 font-semibold px-2.5 py-1 rounded-full border border-emerald-300">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5 inline mr-1"></i> AI Models Calibrated
+            </span>
+        </div>
+    </div>
+
+    <!-- PRESENTATION 1-CLICK PRESETS BANNER -->
+    <div class="mb-8 p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-cyan-950 to-slate-900 text-white shadow-xl border border-cyan-700/50">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+            <div class="flex items-center space-x-2">
+                <span class="p-1.5 rounded-lg bg-cyan-500/20 text-cyan-300">
+                    <i data-lucide="zap" class="w-4 h-4"></i>
+                </span>
+                <h3 class="text-sm font-bold text-cyan-300 uppercase tracking-wider">
+                    Presentation 1-Click Demonstration Personas
+                </h3>
+            </div>
+            <span class="text-[11px] text-slate-400">Click any persona to auto-populate the form instantly:</span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+            <button type="button" onclick="loadPreset('cardiac')" class="p-3 rounded-xl bg-slate-800/90 hover:bg-rose-950/60 border border-slate-700 hover:border-rose-500 text-left transition group cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-rose-300 group-hover:text-rose-200">Patient A</span>
+                    <i data-lucide="heart" class="w-3.5 h-3.5 text-rose-400"></i>
+                </div>
+                <p class="text-[11px] font-semibold text-white mt-1">High Cardiac & Stroke Risk</p>
+                <p class="text-[10px] text-slate-400 mt-0.5">BP 164/98 &bull; Glucose 145 &bull; Smoker</p>
+            </button>
+
+            <button type="button" onclick="loadPreset('diabetes')" class="p-3 rounded-xl bg-slate-800/90 hover:bg-amber-950/60 border border-slate-700 hover:border-amber-500 text-left transition group cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-amber-300 group-hover:text-amber-200">Patient B</span>
+                    <i data-lucide="activity" class="w-3.5 h-3.5 text-amber-400"></i>
+                </div>
+                <p class="text-[11px] font-semibold text-white mt-1">Type-2 Diabetes Early Risk</p>
+                <p class="text-[10px] text-slate-400 mt-0.5">Glucose 184 &bull; HbA1c 7.9% &bull; BMI 32.4</p>
+            </button>
+
+            <button type="button" onclick="loadPreset('kidney_liver')" class="p-3 rounded-xl bg-slate-800/90 hover:bg-cyan-950/60 border border-slate-700 hover:border-cyan-500 text-left transition group cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-cyan-300 group-hover:text-cyan-200">Patient C</span>
+                    <i data-lucide="droplets" class="w-3.5 h-3.5 text-cyan-400"></i>
+                </div>
+                <p class="text-[11px] font-semibold text-white mt-1">Renal & Hepatic Alert</p>
+                <p class="text-[10px] text-slate-400 mt-0.5">Creatinine 2.7 &bull; ALT 96 &bull; Edema</p>
+            </button>
+
+            <button type="button" onclick="loadPreset('healthy')" class="p-3 rounded-xl bg-slate-800/90 hover:bg-emerald-950/60 border border-slate-700 hover:border-emerald-500 text-left transition group cursor-pointer">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-emerald-300 group-hover:text-emerald-200">Patient D</span>
+                    <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i>
+                </div>
+                <p class="text-[11px] font-semibold text-white mt-1">Healthy Control Baseline</p>
+                <p class="text-[10px] text-slate-400 mt-0.5">BP 114/74 &bull; Glucose 85 &bull; Active</p>
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN INTAKE FORM -->
+    <form id="patientForm" action="/api/patient/save" method="POST" class="space-y-6">
+        <!-- 1. Patient Demographics -->
+        <div class="bg-white rounded-2xl p-6 sm:p-7 shadow-sm border border-slate-200">
+            <h3 class="text-sm font-bold text-slate-900 flex items-center border-b border-slate-100 pb-3 mb-5">
+                <span class="w-6 h-6 rounded-lg bg-cyan-100 text-cyan-700 inline-flex items-center justify-center mr-2.5 font-bold text-xs">1</span>
+                Patient Demographics & Biometrics
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Full Name *</label>
+                    <input type="text" id="name" name="name" required placeholder="e.g. Ramesh Kumar"
+                        class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Age (Years) *</label>
+                    <input type="number" id="age" name="age" min="18" max="100" value="52" required
+                        class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Biological Gender *</label>
+                    <select id="gender" name="gender" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                        <option value="1">Male</option>
+                        <option value="0">Female</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Blood Group</label>
+                    <select id="blood_group" name="blood_group" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                        <option value="O+">O+</option>
+                        <option value="A+">A+</option>
+                        <option value="B+">B+</option>
+                        <option value="AB+">AB+</option>
+                        <option value="O-">O-</option>
+                        <option value="A-">A-</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Height (cm) *</label>
+                    <input type="number" id="height" name="height" min="120" max="220" value="170" required oninput="calcBMI()"
+                        class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Weight (kg) *</label>
+                    <input type="number" id="weight" name="weight" min="35" max="200" value="74" required oninput="calcBMI()"
+                        class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Calculated BMI</label>
+                    <div class="flex items-center space-x-2">
+                        <input type="number" step="0.1" id="bmi" name="bmi" readonly value="25.6"
+                            class="w-full px-3.5 py-2.5 rounded-lg bg-slate-100 border border-slate-300 text-sm font-semibold text-slate-700">
+                        <span id="bmiTag" class="text-xs font-bold px-2 py-1 rounded bg-amber-100 text-amber-800 whitespace-nowrap">Overweight</span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Daily Sleep (Hours)</label>
+                    <input type="number" step="0.5" id="sleep_hours" name="sleep_hours" min="3" max="14" value="7.0"
+                        class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. Lifestyle & Behavioral Factors -->
+        <div class="bg-white rounded-2xl p-6 sm:p-7 shadow-sm border border-slate-200">
+            <h3 class="text-sm font-bold text-slate-900 flex items-center border-b border-slate-100 pb-3 mb-5">
+                <span class="w-6 h-6 rounded-lg bg-cyan-100 text-cyan-700 inline-flex items-center justify-center mr-2.5 font-bold text-xs">2</span>
+                Lifestyle & Behavioral Patterns
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Smoking Status</label>
+                    <select id="smoking" name="smoking" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                        <option value="0">Never Smoked</option>
+                        <option value="1">Former Smoker</option>
+                        <option value="2">Active Smoker</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Alcohol Consumption</label>
+                    <select id="alcohol" name="alcohol" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                        <option value="0">None / Occasional</option>
+                        <option value="1">Moderate</option>
+                        <option value="2">Heavy</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Physical Activity</label>
+                    <select id="physical_activity" name="physical_activity" class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                        <option value="0">Sedentary (Rarely Exercise)</option>
+                        <option value="1" selected>Moderate (1-3 days/wk)</option>
+                        <option value="2">Active Athlete (4+ days/wk)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Clinical Vitals & Cardiometabolic Chemistry -->
+        <div class="bg-white rounded-2xl p-6 sm:p-7 shadow-sm border border-slate-200">
+            <h3 class="text-sm font-bold text-slate-900 flex items-center border-b border-slate-100 pb-3 mb-5">
+                <span class="w-6 h-6 rounded-lg bg-cyan-100 text-cyan-700 inline-flex items-center justify-center mr-2.5 font-bold text-xs">3</span>
+                Cardiometabolic Vitals & Blood Chemistry
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-0.5">Systolic BP (mmHg) *</label>
+                    <span class="text-[10px] text-slate-400 block mb-1">Normal: 90 - 120</span>
+                    <input type="number" id="systolic_bp" name="systolic_bp" min="80" max="230" value="128" required
+                        class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-0.5">Diastolic BP (mmHg) *</label>
+                    <span class="text-[10px] text-slate-400 block mb-1">Normal: 60 - 80</span>
+                    <input type="number" id="diastolic_bp" name="diastolic_bp" min="50" max="130" value="82" required
+                        class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-0.5">Fasting Glucose (mg/dL) *</label>
+                    <span class="text-[10px] text-slate-400 block mb-1">Normal: 70 - 99</span>
+                    <input type="number" id="fasting_glucose" name="fasting_glucose" min="60" max="400" value="105" required
+                        class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-0.5">HbA1c (%)</label>
+                    <span class="text-[10px] text-slate-400 block mb-1">Normal: 4.0 - 5.6</span>
+                    <input type="number" step="0.1" id="hba1c" name="hba1c" min="4.0" max="15.0" value="5.7"
+                        class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-0.5">Total Cholesterol (mg/dL)</label>
+                    <span class="text-[10px] text-slate-400 block mb-1">Desirable: < 200</span>
+                    <input type="number" id="cholesterol_total" name="cholesterol_total" min="100" max="450" value="195"
+                        class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-0.5">HDL Cholesterol (mg/dL)</label>
+                    <span class="text-[10px] text-slate-400 block mb-1">Protective: > 45</span>
+                    <input type="number" id="cholesterol_hdl" name="cholesterol_hdl" min="20" max="110" value="48"
+                        class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-0.5">LDL Cholesterol (mg/dL)</label>
+                    <span class="text-[10px] text-slate-400 block mb-1">Optimal: < 100</span>
+                    <input type="number" id="cholesterol_ldl" name="cholesterol_ldl" min="40" max="280" value="122"
+                        class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Organ-Specific Biomarkers -->
+        <div class="bg-white rounded-2xl p-6 sm:p-7 shadow-sm border border-slate-200">
+            <h3 class="text-sm font-bold text-slate-900 flex items-center border-b border-slate-100 pb-3 mb-5">
+                <span class="w-6 h-6 rounded-lg bg-cyan-100 text-cyan-700 inline-flex items-center justify-center mr-2.5 font-bold text-xs">4</span>
+                Renal (Kidney) & Hepatic (Liver) Biomarkers
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-0.5">Creatinine (mg/dL)</label>
+                    <span class="text-[10px] text-slate-400 block mb-1">Normal: 0.6 - 1.2</span>
+                    <input type="number" step="0.01" id="serum_creatinine" name="serum_creatinine" min="0.4" max="8.0" value="1.0"
+                        class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-0.5">Blood Urea (mg/dL)</label>
+                    <span class="text-[10px] text-slate-400 block mb-1">Normal: 7 - 20</span>
+                    <input type="number" id="blood_urea" name="blood_urea" min="5" max="150" value="16"
+                        class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-0.5">ALT / SGPT (U/L)</label>
+                    <span class="text-[10px] text-slate-400 block mb-1">Normal: 7 - 45</span>
+                    <input type="number" id="liver_alt" name="liver_alt" min="5" max="300" value="28"
+                        class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-0.5">AST / SGOT (U/L)</label>
+                    <span class="text-[10px] text-slate-400 block mb-1">Normal: 8 - 40</span>
+                    <input type="number" id="liver_ast" name="liver_ast" min="5" max="300" value="25"
+                        class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-0.5">Total Bilirubin (mg/dL)</label>
+                    <span class="text-[10px] text-slate-400 block mb-1">Normal: 0.2 - 1.2</span>
+                    <input type="number" step="0.1" id="bilirubin_total" name="bilirubin_total" min="0.1" max="10.0" value="0.7"
+                        class="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-cyan-500">
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. Symptoms & Multimodal Features -->
+        <div class="bg-white rounded-2xl p-6 sm:p-7 shadow-sm border border-slate-200">
+            <h3 class="text-sm font-bold text-slate-900 flex items-center border-b border-slate-100 pb-3 mb-5">
+                <span class="w-6 h-6 rounded-lg bg-cyan-100 text-cyan-700 inline-flex items-center justify-center mr-2.5 font-bold text-xs">5</span>
+                Symptoms Matrix & Multimodal Scan Features
+            </h3>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                <label class="flex items-center p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                    <input type="checkbox" id="chest_pain" name="chest_pain" value="1" class="w-4 h-4 text-cyan-600 rounded">
+                    <span class="ml-2.5 text-xs font-medium text-slate-800">Retrosternal Chest Pain</span>
+                </label>
+
+                <label class="flex items-center p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                    <input type="checkbox" id="shortness_of_breath" name="shortness_of_breath" value="1" class="w-4 h-4 text-cyan-600 rounded">
+                    <span class="ml-2.5 text-xs font-medium text-slate-800">Shortness of Breath</span>
+                </label>
+
+                <label class="flex items-center p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                    <input type="checkbox" id="ecg_abnormal" name="ecg_abnormal" value="1" class="w-4 h-4 text-cyan-600 rounded">
+                    <span class="ml-2.5 text-xs font-medium text-slate-800">ECG ST Anomaly Detected</span>
+                </label>
+
+                <label class="flex items-center p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                    <input type="checkbox" id="retinal_scan_abnormal" name="retinal_scan_abnormal" value="1" class="w-4 h-4 text-cyan-600 rounded">
+                    <span class="ml-2.5 text-xs font-medium text-slate-800">Retinal Micro-Lesions Scan</span>
+                </label>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Clinical Intake Remarks</label>
+                <textarea id="notes" name="notes" rows="2" placeholder="e.g. Patient referred for comprehensive multi-disease screening..."
+                    class="w-full px-3.5 py-2 rounded-lg border border-slate-300 text-xs focus:ring-2 focus:ring-cyan-500"></textarea>
+            </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-200">
+            <a href="/" class="text-xs font-semibold text-slate-500 hover:text-slate-800">&larr; Return to Home</a>
+            <div class="flex items-center space-x-3">
+                <button type="submit" name="target" value="doctor" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-md transition flex items-center cursor-pointer">
+                    <i data-lucide="cpu" class="w-4 h-4 mr-2"></i> Run AI & Open Doctor Portal
+                </button>
+                <button type="submit" name="target" value="patient" class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs shadow-md transition flex items-center cursor-pointer">
+                    <i data-lucide="user-check" class="w-4 h-4 mr-2"></i> Open Patient Portal
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function calcBMI() {
+        const height = parseFloat(document.getElementById('height').value) || 170;
+        const weight = parseFloat(document.getElementById('weight').value) || 70;
+        const bmi = (weight / ((height / 100) ** 2)).toFixed(1);
+        document.getElementById('bmi').value = bmi;
+
+        const tag = document.getElementById('bmiTag');
+        if (bmi < 18.5) {
+            tag.innerText = 'Underweight';
+            tag.className = 'text-xs font-bold px-2 py-1 rounded bg-blue-100 text-blue-800 whitespace-nowrap';
+        } else if (bmi < 25.0) {
+            tag.innerText = 'Normal';
+            tag.className = 'text-xs font-bold px-2 py-1 rounded bg-emerald-100 text-emerald-800 whitespace-nowrap';
+        } else if (bmi < 30.0) {
+            tag.innerText = 'Overweight';
+            tag.className = 'text-xs font-bold px-2 py-1 rounded bg-amber-100 text-amber-800 whitespace-nowrap';
+        } else {
+            tag.innerText = 'Obese';
+            tag.className = 'text-xs font-bold px-2 py-1 rounded bg-red-100 text-red-800 whitespace-nowrap';
+        }
+    }
+
+    const presets = {
+        cardiac: {
+            name: "Rajesh Sharma", age: 58, gender: 1, height: 172, weight: 86, blood_group: "B+",
+            smoking: 2, alcohol: 1, physical_activity: 0, sleep_hours: 5.5,
+            systolic_bp: 164, diastolic_bp: 98, fasting_glucose: 145, hba1c: 6.8,
+            cholesterol_total: 252, cholesterol_hdl: 36, cholesterol_ldl: 168,
+            serum_creatinine: 1.25, blood_urea: 22, liver_alt: 38, liver_ast: 35, bilirubin_total: 0.9,
+            chest_pain: true, shortness_of_breath: true, ecg_abnormal: true, retinal_scan_abnormal: false,
+            notes: "Preset Demo: Chronic smoker with severe hypertension, exertional retrosternal angina, and ST deviations."
+        },
+        diabetes: {
+            name: "Sunita Verma", age: 49, gender: 0, height: 158, weight: 81, blood_group: "O+",
+            smoking: 0, alcohol: 0, physical_activity: 0, sleep_hours: 6.0,
+            systolic_bp: 138, diastolic_bp: 88, fasting_glucose: 184, hba1c: 7.9,
+            cholesterol_total: 218, cholesterol_hdl: 42, cholesterol_ldl: 138,
+            serum_creatinine: 1.15, blood_urea: 19, liver_alt: 44, liver_ast: 39, bilirubin_total: 0.8,
+            chest_pain: false, shortness_of_breath: false, ecg_abnormal: false, retinal_scan_abnormal: true,
+            notes: "Preset Demo: Diabetic microvascular retinopathy signs with uncontrolled fasting hyperglycemia."
+        },
+        kidney_liver: {
+            name: "Vikram Patil", age: 64, gender: 1, height: 170, weight: 85, blood_group: "AB+",
+            smoking: 1, alcohol: 2, physical_activity: 1, sleep_hours: 5.5,
+            systolic_bp: 156, diastolic_bp: 94, fasting_glucose: 140, hba1c: 6.5,
+            cholesterol_total: 232, cholesterol_hdl: 37, cholesterol_ldl: 152,
+            serum_creatinine: 2.70, blood_urea: 58, liver_alt: 96, liver_ast: 92, bilirubin_total: 2.5,
+            chest_pain: false, shortness_of_breath: true, ecg_abnormal: false, retinal_scan_abnormal: false,
+            notes: "Preset Demo: Renal failure risk (serum creatinine 2.7 mg/dL) paired with heavy alcohol transaminitis."
+        },
+        healthy: {
+            name: "Ananya Iyer", age: 29, gender: 0, height: 165, weight: 56, blood_group: "A+",
+            smoking: 0, alcohol: 0, physical_activity: 2, sleep_hours: 7.5,
+            systolic_bp: 114, diastolic_bp: 74, fasting_glucose: 85, hba1c: 5.1,
+            cholesterol_total: 160, cholesterol_hdl: 64, cholesterol_ldl: 80,
+            serum_creatinine: 0.80, blood_urea: 12, liver_alt: 20, liver_ast: 18, bilirubin_total: 0.5,
+            chest_pain: false, shortness_of_breath: false, ecg_abnormal: false, retinal_scan_abnormal: false,
+            notes: "Preset Demo: Healthy athletic young adult exhibiting all optimal biomarkers."
+        }
+    };
+
+    function loadPreset(key) {
+        const p = presets[key];
+        if (!p) return;
+
+        for (const [k, v] of Object.entries(p)) {
+            const el = document.getElementById(k);
+            if (!el) continue;
+            if (el.type === 'checkbox') {
+                el.checked = !!v;
+            } else {
+                el.value = v;
+            }
+        }
+        calcBMI();
+
+        const banner = document.createElement('div');
+        banner.className = 'fixed bottom-6 right-6 bg-slate-900 text-cyan-300 text-xs font-semibold px-4 py-3 rounded-xl shadow-2xl z-50 border border-cyan-500/40 flex items-center';
+        banner.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4 mr-2 text-emerald-400"></i> Loaded Preset: ' + p.name;
+        document.body.appendChild(banner);
+        lucide.createIcons();
+        setTimeout(() => banner.remove(), 2500);
+    }
+</script>
+{% endblock %}

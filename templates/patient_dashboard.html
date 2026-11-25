@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Wellness Portal - {{ patient.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Patient Portal Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 pb-4 border-b border-slate-200">
+        <div>
+            <div class="flex items-center space-x-2 text-xs text-slate-500 mb-1">
+                <a href="/" class="hover:text-cyan-600">Home</a>
+                <span>/</span>
+                <span class="text-emerald-700 font-semibold">Patient Wellness Portal</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 flex items-center">
+                <i data-lucide="user-check" class="w-7 h-7 text-emerald-600 mr-2.5"></i>
+                Personal Health & Preventive Wellness Dashboard
+            </h1>
+            <p class="text-xs text-slate-500 mt-1">Easy-to-understand early health risk assessment and personalized lifestyle guidance.</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3">
+            <div class="flex items-center space-x-2">
+                <label for="patientSelector" class="text-xs font-semibold text-slate-600 whitespace-nowrap">Viewing Profile:</label>
+                <select id="patientSelector" onchange="switchPatient(this.value)" class="px-3 py-2 rounded-lg border border-slate-300 text-xs font-semibold bg-white text-slate-800 shadow-sm focus:ring-2 focus:ring-emerald-500">
+                    {% for p in all_patients %}
+                    <option value="{{ p.id }}" {% if p.id == patient.id %}selected{% endif %}>
+                        {{ p.name }} (ID: {{ p.id }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button onclick="window.print()" class="inline-flex items-center px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition cursor-pointer">
+                <i data-lucide="download" class="w-3.5 h-3.5 mr-1.5"></i> Download My Summary
+            </button>
+        </div>
+    </div>
+
+    <!-- WELCOME & OVERALL HEALTH INDEX CARD -->
+    <div class="bg-gradient-to-br from-white to-emerald-50/40 rounded-3xl p-6 sm:p-8 shadow-sm border border-emerald-100 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+            <!-- Greeting & Info -->
+            <div class="md:col-span-8 space-y-3">
+                <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
+                    <i data-lucide="heart" class="w-3.5 h-3.5 text-emerald-600"></i>
+                    <span>Preventive Care Assessment</span>
+                </div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900">
+                    Hello, {{ patient.name }}!
+                </h2>
+                <p class="text-sm text-slate-600 leading-relaxed max-w-xl">
+                    Here is your AI-analyzed preventive health overview. Based on your recent biometric intake, your overall health index is currently calculated at 
+                    <strong class="text-slate-900">{{ patient.assessment.overall_health_score }} / 100</strong>.
+                </p>
+
+                <!-- Status pill -->
+                <div class="pt-2">
+                    <span class="inline-flex items-center px-4 py-1.5 rounded-xl text-xs font-bold border"
+                          style="background-color: {{ patient.assessment.overall_color }}15; color: {{ patient.assessment.overall_color }}; border-color: {{ patient.assessment.overall_color }}40">
+                        <i data-lucide="shield" class="w-4 h-4 mr-2"></i>
+                        {{ patient.assessment.overall_status }}
+                    </span>
+                </div>
+
+                <!-- Patient quick tags -->
+                <div class="pt-4 flex flex-wrap gap-4 text-xs text-slate-500 border-t border-slate-100">
+                    <span><strong>Blood Group:</strong> {{ patient.blood_group }}</span>
+                    <span><strong>BMI:</strong> {{ patient.assessment.vitals_summary.bmi }} kg/m²</span>
+                    <span><strong>Blood Pressure:</strong> {{ patient.assessment.vitals_summary.bp }} mmHg</span>
+                    <span><strong>Fasting Sugar:</strong> {{ patient.assessment.vitals_summary.glucose }} mg/dL</span>
+                </div>
+            </div>
+
+            <!-- Health Score Ring -->
+            <div class="md:col-span-4 flex flex-col items-center justify-center p-6 bg-white rounded-2xl border border-emerald-100 shadow-sm text-center">
+                <div class="relative w-36 h-36 flex items-center justify-center">
+                    <svg class="w-full h-full transform -rotate-90">
+                        <circle cx="72" cy="72" r="58" stroke="#e2e8f0" stroke-width="12" fill="transparent" />
+                        <circle cx="72" cy="72" r="58" stroke="{{ patient.assessment.overall_color }}" stroke-width="12" fill="transparent"
+                                stroke-dasharray="364.4"
+                                stroke-dashoffset="{{ 364.4 - (364.4 * patient.assessment.overall_health_score / 100) }}"
+                                stroke-linecap="round" class="transition-all duration-1000 ease-out" />
+                    </svg>
+                    <div class="absolute flex flex-col items-center">
+                        <span class="text-3xl font-black text-slate-800">{{ patient.assessment.overall_health_score }}</span>
+                        <span class="text-[10px] font-bold uppercase text-slate-400">Score / 100</span>
+                    </div>
+                </div>
+                <p class="text-xs font-bold text-slate-700 mt-3">Unified Health Score</p>
+                <p class="text-[11px] text-slate-400">Higher is healthier</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5 DISEASE RISK CARDS (PLAIN ENGLISH) -->
+    <div class="mb-10">
+        <h3 class="text-base font-bold text-slate-900 mb-1 flex items-center">
+            <i data-lucide="shield-alert" class="w-5 h-5 text-emerald-600 mr-2"></i>
+            5 Key Health Condition Assessments
+        </h3>
+        <p class="text-xs text-slate-500 mb-5">Clear, color-coded early risk indicators calculated by our multi-disease AI ensemble.</p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            {% for key, d in patient.assessment.diseases.items() %}
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between hover:shadow-md transition">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="w-9 h-9 rounded-xl flex items-center justify-center text-white shadow-sm" style="background-color: {{ d.color }}">
+                            <i data-lucide="{{ d.icon }}" class="w-4 h-4"></i>
+                        </div>
+                        <span class="text-[11px] font-bold px-2 py-0.5 rounded-full border {{ d.badge_class }}">
+                            {{ d.tier }} Risk
+                        </span>
+                    </div>
+
+                    <h4 class="text-xs font-bold text-slate-900 leading-snug">{{ d.title }}</h4>
+
+                    <!-- Plain English risk gauge -->
+                    <div class="mt-4">
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-[11px] text-slate-500">Risk Probability:</span>
+                            <span class="font-extrabold font-mono" style="color: {{ d.color }}">{{ d.percentage }}%</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-700" style="width: {{ d.percentage }}%; background-color: {{ d.color }}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plain language description of top factor -->
+                <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-600">
+                    {% if d.top_risk_drivers %}
+                    <span class="font-semibold text-slate-800 block">Watch Out:</span>
+                    <p class="text-[10px] text-slate-500 mt-0.5">{{ d.top_risk_drivers[0].description }}</p>
+                    {% else %}
+                    <span class="font-semibold text-emerald-700 block">Status Optimal:</span>
+                    <p class="text-[10px] text-slate-500 mt-0.5">Biomarkers in target zone.</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- PERSONALIZED PREVENTIVE ACTION PLAN -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+        <!-- Dietary & Exercise Advice -->
+        <div class="lg:col-span-7 space-y-6">
+            <!-- Nutrition Advice Card -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center mb-4 border-b border-slate-100 pb-3">
+                    <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 inline-flex items-center justify-center mr-2 text-xs font-bold">
+                        <i data-lucide="utensils" class="w-4 h-4"></i>
+                    </span>
+                    Tailored Dietary Guidance
+                </h3>
+                <ul class="space-y-2.5 text-xs text-slate-700">
+                    {% for tip in patient.assessment.recommendations.dietary %}
+                    <li class="flex items-start">
+                        <i data-lucide="check" class="w-4 h-4 text-emerald-600 mr-2 shrink-0 mt-0.5"></i>
+                        <span>{{ tip }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Lifestyle & Exercise Card -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center mb-4 border-b border-slate-100 pb-3">
+                    <span class="w-7 h-7 rounded-lg bg-cyan-100 text-cyan-700 inline-flex items-center justify-center mr-2 text-xs font-bold">
+                        <i data-lucide="activity" class="w-4 h-4"></i>
+                    </span>
+                    Physical Activity & Lifestyle Habits
+                </h3>
+                <ul class="space-y-2.5 text-xs text-slate-700">
+                    {% for tip in patient.assessment.recommendations.lifestyle %}
+                    <li class="flex items-start">
+                        <i data-lucide="arrow-right-circle" class="w-4 h-4 text-cyan-600 mr-2 shrink-0 mt-0.5"></i>
+                        <span>{{ tip }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Follow-up Timeline & Doctor's Advice -->
+        <div class="lg:col-span-5 space-y-6">
+            <!-- Follow-up Timeline Card -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center mb-4 border-b border-slate-100 pb-3">
+                    <i data-lucide="calendar-clock" class="w-4 h-4 text-indigo-600 mr-2"></i>
+                    Recommended Follow-up Timeline
+                </h3>
+                <div class="space-y-4">
+                    {% for item in patient.assessment.recommendations.timeline %}
+                    <div class="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                        <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-blue-100 text-blue-800">
+                            {{ item.time }}
+                        </span>
+                        <p class="text-xs font-medium text-slate-800 mt-2">{{ item.task }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Physician Impressions -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center mb-3">
+                    <i data-lucide="stethoscope" class="w-4 h-4 text-blue-600 mr-2"></i>
+                    Attending Physician Impressions
+                </h3>
+                <p class="text-xs text-slate-600 italic bg-slate-50 p-3.5 rounded-xl border border-slate-200 leading-relaxed">
+                    "{{ patient.notes or 'Routine annual monitoring suggested. Please continue adherence to balanced nutrition and hydration.' }}"
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= PATIENT PRINTABLE SUMMARY (Hidden on screen, renders on Print/PDF) ================= -->
+<div class="hidden print-only p-8 bg-white text-black max-w-4xl mx-auto printable-report">
+    <div class="border-b-2 border-emerald-600 pb-4 mb-6 flex justify-between items-start">
+        <div>
+            <h1 class="text-lg font-bold text-slate-900">MESOPREDICT AI &bull; PERSONAL WELLNESS SUMMARY</h1>
+            <p class="text-xs text-slate-600">Multimodal Early Disease Prediction System &bull; Preventive Health Card</p>
+        </div>
+        <div class="text-right text-xs">
+            <p><strong>Patient ID:</strong> {{ patient.id }}</p>
+            <p><strong>Date:</strong> {{ patient.registered_at }}</p>
+        </div>
+    </div>
+
+    <div class="bg-slate-100 p-4 rounded-lg mb-6 text-xs grid grid-cols-4 gap-4">
+        <div><strong>Patient Name:</strong> {{ patient.name }}</div>
+        <div><strong>Age / Gender:</strong> {{ patient.age }} yrs / {% if patient.gender == 1 %}Male{% else %}Female{% endif %}</div>
+        <div><strong>Overall Health Score:</strong> {{ patient.assessment.overall_health_score }} / 100</div>
+        <div><strong>Status:</strong> {{ patient.assessment.overall_status }}</div>
+    </div>
+
+    <div class="mb-6">
+        <h3 class="text-sm font-bold border-b border-slate-300 pb-1 mb-2">Disease Risk Assessment</h3>
+        <table class="w-full text-xs text-left">
+            <thead>
+                <tr class="border-b border-slate-300">
+                    <th class="py-1">Condition</th>
+                    <th class="py-1">Risk Percentage</th>
+                    <th class="py-1">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for key, d in patient.assessment.diseases.items() %}
+                <tr class="border-b border-slate-100">
+                    <td class="py-1 font-semibold">{{ d.title }}</td>
+                    <td class="py-1 font-mono font-bold">{{ d.percentage }}%</td>
+                    <td class="py-1">{{ d.tier }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mb-6">
+        <h3 class="text-sm font-bold border-b border-slate-300 pb-1 mb-2">Personal Lifestyle Advice</h3>
+        <ul class="list-disc pl-4 text-xs space-y-1">
+            {% for tip in patient.assessment.recommendations.dietary %}
+            <li>{{ tip }}</li>
+            {% endfor %}
+            {% for tip in patient.assessment.recommendations.lifestyle %}
+            <li>{{ tip }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function switchPatient(patientId) {
+        window.location.href = '/patient/' + patientId;
+    }
+</script>
+{% endblock %}
